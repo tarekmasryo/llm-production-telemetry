@@ -46,10 +46,12 @@ The notebook searches these locations (in order):
 ## How to run ⚙️
 ### Option A — Kaggle
 1) Add the dataset (or upload the CSVs).  
-2) Open the notebook and click **Run All** (not a quick save).  
+2) Open the notebook and click **Run All**.  
 3) Download the generated files from `artifacts/`.
 
 ### Option B — Local
+Create a virtual environment and install dependencies:
+
 ```bash
 python -m venv .venv
 source .venv/bin/activate  # (Windows) .venv\Scripts\activate
@@ -59,11 +61,18 @@ pip install numpy pandas matplotlib seaborn scikit-learn
 ```
 
 Place the CSVs in `./data/` **or** set:
+
 ```bash
 export LLMOPS_DATA_DIR="/path/to/your/csvs"
 ```
 
-Then run the notebook end-to-end.
+Then run the notebook end-to-end (Jupyter/VS Code).
+
+---
+
+## Windowing & leakage protection 🧠
+- If a `split` column exists (with `train/val/test`), the notebook uses it.
+- Otherwise, it uses a **session-safe time split** to avoid leakage: sessions are assigned fully to history vs evaluation.
 
 ---
 
@@ -76,6 +85,11 @@ Then run the notebook end-to-end.
 6) **Drift report** (what changed between windows)  
 7) **Triage threshold** (calibrated risk → capacity-aware decision)  
 8) **DecisionArtifact** (machine-readable summary)
+
+---
+
+## Compatibility notes 🧩
+- **scikit-learn >= 1.6**: calibration avoids deprecated `cv="prefit"` behavior (via the recommended pattern), so you shouldn’t see the `cv='prefit' is deprecated` warning on recent versions.
 
 ---
 
