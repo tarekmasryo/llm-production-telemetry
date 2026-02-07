@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  lint-and-smoke:
+  lint-test-smoke:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,6 +24,10 @@ jobs:
         run: |
           ruff check .
           ruff format --check .
+
+      - name: Unit tests
+        run: |
+          pytest --cov=scripts --cov-report=term-missing
 
       - name: Generate sample data
         run: |

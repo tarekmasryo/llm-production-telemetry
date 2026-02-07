@@ -138,6 +138,8 @@ Run inside the venv:
 ```bash
 ruff check .
 ruff format --check .
+
+pytest --cov=scripts --cov-report=term-missing
 ```
 
 Pre-commit (requires a Git repo; ZIP users can run <code>git init</code> first):
