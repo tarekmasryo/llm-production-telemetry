@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+.dist/
+.build/
+
+# Envs
+.venv/
+venv/
+.env
+.env.*
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Runtime outputs
+artifacts/*
+!artifacts/.gitkeep
+
+# Local data (keep sample)
+data/*
+!data/.gitkeep
+!data/sample/
+!data/sample/**
+
+# Logs
+*.log
