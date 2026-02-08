@@ -4,6 +4,8 @@
   SLO/budget burn → hotspots → routing backtest → drift checks → capacity‑aware triage → <code>DecisionArtifact</code>.
 </div>
 
+Case study: `CASE_STUDY.md`
+
 ---
 
 ## What this repo is 🧭
@@ -18,6 +20,7 @@ This is not “EDA for pretty charts”. It is a <b>decision pipeline</b>.
 ---
 
 ## What you will produce 📦
+Outputs are exported to `./artifacts/` (see `artifacts/README.md`).
 The notebook writes outputs to <code>artifacts/</code>:
 
 - <code>routing_policy_use_case.csv</code> — routing policy per <code>use_case</code> (cost‑aware + SLO‑aware)
@@ -29,6 +32,7 @@ The notebook writes outputs to <code>artifacts/</code>:
 ---
 
 ## Data inputs 🗃️
+Telemetry CSVs can be placed anywhere; a simple local default is `data/raw/` (see `data/raw/README.md`).
 <b>Required</b> (CSV):
 - <code>llm_system_interactions.csv</code>
 - <code>llm_system_sessions_summary.csv</code>
