@@ -33,3 +33,10 @@ data/*
 
 # Logs
 *.log
+
+# Test / coverage
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.ruff_cache/
