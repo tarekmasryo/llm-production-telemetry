@@ -209,4 +209,4 @@ See [`CASE_STUDY.md`](CASE_STUDY.md) for the project narrative, problem framing,
 
 ## 📜 License
 
-MIT — see [`LICENSE`](LICENSE).
+MIT — see [`LICENSE`](LICENSE). Dataset licensing should be specified separately wherever the dataset is published.
