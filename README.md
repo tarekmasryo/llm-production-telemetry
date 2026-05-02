@@ -1,94 +1,128 @@
-<h2 style="margin:0 0 10px 0;">LLM Production Telemetry — Decision‑Grade Observability</h2>
-<div style="margin:0 0 14px 0; opacity:0.9;">
-  An <b>operator decision notebook</b>: turn noisy LLM telemetry into <b>ship‑ready policies</b> —
-  SLO/budget burn → hotspots → routing backtest → drift checks → capacity‑aware triage → <code>DecisionArtifact</code>.
-</div>
+# 🧭 LLM Production Telemetry — Decision-Grade Observability
 
-Case study: `CASE_STUDY.md`
+![Python](https://img.shields.io/badge/Python-3.11%2B-blue)
+![Notebook](https://img.shields.io/badge/Notebook-Kaggle%20ready-20BEFF)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Status](https://img.shields.io/badge/Status-Portfolio%20grade-success)
 
----
+An operator-focused notebook that turns noisy LLM telemetry into **review-ready operational artifacts**:
 
-## What this repo is 🧭
-This repo contains a <b>production‑minded notebook</b> that converts multi‑table LLM telemetry into <b>versionable policy artifacts</b> you can:
+**SLO/budget burn → hotspots → routing backtest → temporal drift checks → capacity-aware triage → `DecisionArtifact`.**
 
-- review like configs ✅
-- deploy behind feature flags 🚦
-- monitor + rollback safely 🔁
-
-This is not “EDA for pretty charts”. It is a <b>decision pipeline</b>.
+This is not a generic EDA notebook. It is a decision workflow for reviewing whether an LLM system is becoming slower, riskier, more expensive, or harder to operate.
 
 ---
 
-## What you will produce 📦
-Outputs are exported to `./artifacts/` (see `artifacts/README.md`).
-The notebook writes outputs to <code>artifacts/</code>:
+## ✨ What this repo demonstrates
 
-- <code>routing_policy_use_case.csv</code> — routing policy per <code>use_case</code> (cost‑aware + SLO‑aware)
-- <code>drift_report.csv</code> — drift signals across windows (PSI / total‑variation distance)
-- <code>triage_threshold_policy.json</code> — capacity‑aware review threshold (risk × unit costs × workload)
-- <code>triage_actions_preview.csv</code> — ranked review‑queue preview in the evaluation window
-- <code>decision_artifact.json</code> — strict JSON summary designed for automation/auditability
+This project shows how to analyze LLM production telemetry with an operator mindset:
 
----
+- ✅ Validate multi-table telemetry before analysis
+- 📊 Monitor failure rate, latency, token volume, and cost
+- 🔥 Identify risky use cases, providers, models, and account tiers
+- 🧪 Backtest a candidate routing policy against baseline traffic
+- 🌊 Detect temporal drift between early and recent windows
+- 🧑‍💻 Build a capacity-aware triage threshold for review queues
+- 🧾 Export a strict JSON `DecisionArtifact` for review and automation
 
-## Data inputs 🗃️
-Telemetry CSVs can be placed anywhere; a simple local default is `data/raw/` (see `data/raw/README.md`).
-<b>Required</b> (CSV):
-- <code>llm_system_interactions.csv</code>
-- <code>llm_system_sessions_summary.csv</code>
-- <code>llm_system_users_summary.csv</code>
-
-<b>Optional</b> (CSV, ignored if missing):
-- <code>llm_system_prompts_lookup.csv</code>
-- <code>llm_system_instruction_tuning_samples.csv</code>
-
-Schema notes: see <code>docs/schema.md</code>.
-
-<b>Discovery order</b> (first hit wins):
-<code>$LLMOPS_DATA_DIR</code> → <code>./</code> → <code>./data</code> → <code>/mnt/data</code> → <code>/kaggle/input</code>
+The goal is not to claim that every candidate policy is ready to deploy. The goal is to produce evidence that helps decide whether to **keep baseline behavior, run shadow validation, or stop a rollout**.
 
 ---
 
-## How to run ⚙️
+## 🧠 Notebook story
+
+You are the on-call operator for an LLM system. Telemetry is noisy, budgets are limited, and failures can carry operational risk.
+
+The notebook answers three practical questions:
+
+1. Are we burning reliability, latency, or cost budgets — and where?
+2. Does a candidate routing policy meet rollout-review criteria in the evaluation window?
+3. What triage threshold balances review capacity against missed-failure risk?
+
+---
+
+## 📦 Review-ready outputs
+
+Generated files are written to `artifacts/`:
+
+| Output | Purpose |
+|---|---|
+| `routing_policy_use_case.csv` | Candidate routing proposal per `use_case` |
+| `routing_backtest_summary.csv` | Review verdict versus baseline traffic |
+| `drift_report.csv` | Temporal early-vs-recent drift signals |
+| `triage_threshold_policy.json` | Selected review threshold and operating-mode warning |
+| `triage_baseline_comparison.csv` | Review-none, review-all, top-K, and selected-threshold comparison |
+| `triage_actions_preview.csv` | Ranked preview of review candidates in the evaluation window |
+| `triage_threshold_curve.csv` | Threshold sweep for capacity and cost trade-off review |
+| `decision_artifact.json` | Machine-readable audit record for automation and traceability |
+
+These artifacts are **review-ready operational evidence**. Any policy change should be validated in shadow mode before rollout.
+
+---
+
+## 🗃️ Data inputs
+
+The notebook expects three required CSV files:
+
+| File | Grain |
+|---|---|
+| `llm_system_interactions.csv` | One row per LLM interaction |
+| `llm_system_sessions_summary.csv` | One row per session |
+| `llm_system_users_summary.csv` | One row per user |
+
+Optional CSVs are ignored if missing:
+
+- `llm_system_prompts_lookup.csv`
+- `llm_system_instruction_tuning_samples.csv`
+
+Schema details are documented in [`docs/schema.md`](docs/schema.md).
+
+The repo includes synthetic sample telemetry under `data/sample/` for local smoke tests.
+
+---
+
+## ⚙️ How to run
+
 ### Option A — Kaggle
-1) Add your dataset (or upload the CSVs).
-2) Open <code>LLM_Production_Telemetry.ipynb</code> and click <b>Run All</b>.
-3) Download outputs from <code>artifacts/</code>.
 
-### Option B — Local (interactive)
-Recommended: <b>Python 3.11+</b>
+1. Upload or attach the telemetry dataset.
+2. Open `LLM_Production_Telemetry.ipynb`.
+3. Click **Run All**.
+4. Review generated files in `artifacts/`.
+
+The notebook searches for data in this order:
+
+```text
+$LLMOPS_DATA_DIR → ./ → ./data → /mnt/data → /kaggle/input
+```
+
+### Option B — Local notebook
+
+Recommended: **Python 3.11+**
 
 ```bash
 python -m venv .venv
-# Windows (PowerShell): .venv\Scripts\Activate.ps1
+# Windows PowerShell: .venv\Scripts\Activate.ps1
 # macOS/Linux: source .venv/bin/activate
 
 python -m pip install -U pip
 pip install -r requirements.txt
+jupyter notebook LLM_Production_Telemetry.ipynb
 ```
 
-(Optional) dev tooling:
+To point the notebook to local CSVs:
+
 ```bash
-pip install -r requirements-dev.txt
+export LLMOPS_DATA_DIR=/path/to/csvs
 ```
 
-Point the notebook to your CSVs:
-- Windows (PowerShell)
-  ```powershell
-  $env:LLMOPS_DATA_DIR="D:\\path\\to\\csvs"
-  ```
-- macOS/Linux
-  ```bash
-  export LLMOPS_DATA_DIR=/path/to/csvs
-  ```
+Windows PowerShell:
 
-Open the notebook:
-```bash
-jupyter notebook
+```powershell
+$env:LLMOPS_DATA_DIR="D:\path\to\csvs"
 ```
 
-### Option C — Headless execution (CI‑friendly)
-Generate sample telemetry (safe to share), validate, then execute:
+### Option C — Headless smoke run
 
 ```bash
 python scripts/generate_sample_data.py --out-dir data/sample --n-users 300 --n-sessions 500 --n-interactions 2400 --seed 42
@@ -98,89 +132,81 @@ python scripts/run_notebook.py --data-dir data/sample --out-dir artifacts --conf
 
 ---
 
-## Windowing & leakage protection 🧠
-- If a <code>split</code> column exists (<code>train/val/test</code>), the notebook uses it.
-- Otherwise, it uses a <b>session‑safe time split</b> so sessions never leak across windows.
+## 🧪 Quality checks
 
----
+Install development dependencies:
 
-## Notebook flow (reader path) 🔎
-1) Integrity gates (PK/FK + token sanity)
-2) Health snapshot (failure/SLA/cost + missingness)
-3) Budget burn over time
-4) Hotspots + risk slices (where it breaks)
-5) Routing policy + backtest (policy candidates + impact estimate)
-6) Drift report (what changed between windows)
-7) Triage threshold (calibrated risk → capacity‑aware decision)
-8) DecisionArtifact (machine‑readable summary)
+```bash
+pip install -r requirements-dev.txt
+```
 
----
-
-## Configuration knobs 🧩
-Policy knobs live in <code>configs/default.yaml</code> and are mirrored to environment variables.
-Environment variables take precedence over YAML.
-
-Example overrides:
-- Windows (PowerShell)
-  ```powershell
-  $env:SLA_MS="2000"
-  $env:DAILY_COST_BUDGET_USD="50"
-  python scripts/run_notebook.py --data-dir data/sample --out-dir artifacts
-  ```
-- macOS/Linux
-  ```bash
-  export SLA_MS=2000
-  export DAILY_COST_BUDGET_USD=50
-  python scripts/run_notebook.py --data-dir data/sample --out-dir artifacts
-  ```
-
----
-
-## Quality gates ✅
-Run inside the venv:
+Run checks:
 
 ```bash
 ruff check .
 ruff format --check .
-
 pytest --cov=scripts --cov-report=term-missing
-```
-
-Pre-commit (requires a Git repo; ZIP users can run <code>git init</code> first):
-```bash
-pre-commit install
 pre-commit run --all-files
 ```
 
----
-
-## Important disclaimers ⚠️
-- <b>Routing backtest has selection bias.</b> This is an observational estimate from historical behavior — treat it as a candidate policy to test behind a flag.
-- <b>Missing cost/latency can distort decisions.</b> If your telemetry drops these fields at non‑trivial rates, add stop‑ship gates or estimate via pricing + tokens.
-- <b>Triage is post‑call failure triage.</b> The label is <code>is_failure</code>, not a generic “needs_human_review” signal unless your schema defines it.
+The notebook is committed without outputs so GitHub diffs stay clean. The GitHub Actions workflow runs linting, tests, sample-data generation, data validation, a notebook-output guard, a headless notebook smoke execution, and uploads the generated review artifacts.
 
 ---
 
-## Repo structure 🧱
+## 🧱 Repository structure
+
 ```text
 llm-production-telemetry/
 ├─ LLM_Production_Telemetry.ipynb
-├─ artifacts/                      # generated outputs (gitignored)
+├─ CASE_STUDY.md
+├─ README.md
+├─ CHANGELOG.md
+├─ LICENSE
 ├─ configs/
-│  └─ default.yaml                 # policy knobs (SLA/budgets/capacity)
+│  └─ default.yaml
 ├─ data/
-│  └─ sample/                      # synthetic, safe-to-share telemetry
+│  └─ sample/
+│     ├─ llm_system_interactions.csv
+│     ├─ llm_system_sessions_summary.csv
+│     └─ llm_system_users_summary.csv
 ├─ docs/
-│  ├─ schema.md
-│  └─ outputs.md
+│  ├─ outputs.md
+│  └─ schema.md
 ├─ scripts/
 │  ├─ generate_sample_data.py
-│  ├─ validate_data.py
-│  └─ run_notebook.py
+│  ├─ run_notebook.py
+│  └─ validate_data.py
+├─ tests/
 └─ .github/workflows/ci.yml
 ```
 
 ---
 
-## License
-MIT — see <code>LICENSE</code>.
+## ⚠️ Important limitations
+
+- The bundled sample data is synthetic and intended for analytics, benchmarking, and portfolio use.
+- Routing backtests are observational; they can be biased by historical traffic assignment.
+- Triage is modeled as post-call failure review, not a universal human-review label.
+- Production use should add access controls, retention policies, redaction, monitoring, and rollout governance.
+
+---
+
+## ✅ Safe operationalization path
+
+1. Treat exported artifacts as candidates.
+2. Keep baseline routing if the candidate fails the backtest.
+3. Run candidate policies in shadow mode before rollout.
+4. Deploy only behind a feature flag and rollback switch.
+5. Monitor budget burn, drift, failure rate, cost, and queue load in the next window.
+
+---
+
+## 📄 Case study
+
+See [`CASE_STUDY.md`](CASE_STUDY.md) for the project narrative, problem framing, and implementation approach.
+
+---
+
+## 📜 License
+
+MIT — see [`LICENSE`](LICENSE).

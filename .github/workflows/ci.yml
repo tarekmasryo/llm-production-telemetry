@@ -20,6 +20,29 @@ jobs:
           python -m pip install -U pip
           pip install -r requirements.txt -r requirements-dev.txt
 
+      - name: Check notebook has no committed outputs
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          notebook = Path("LLM_Production_Telemetry.ipynb")
+          nb = json.loads(notebook.read_text(encoding="utf-8"))
+          dirty_cells = []
+          for index, cell in enumerate(nb.get("cells", []), start=1):
+              if cell.get("cell_type") != "code":
+                  continue
+              has_outputs = bool(cell.get("outputs"))
+              has_execution_count = cell.get("execution_count") is not None
+              if has_outputs or has_execution_count:
+                  dirty_cells.append(index)
+
+          if dirty_cells:
+              raise SystemExit(
+                  f"Notebook contains committed outputs/execution counts in cells: {dirty_cells}"
+              )
+          PY
+
       - name: Ruff
         run: |
           ruff check .
@@ -40,3 +63,10 @@ jobs:
       - name: Execute notebook (smoke)
         run: |
           python scripts/run_notebook.py --data-dir data/sample --out-dir artifacts --timeout 900
+
+      - name: Upload generated review artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: llm-production-telemetry-artifacts
+          path: artifacts/
+          if-no-files-found: error

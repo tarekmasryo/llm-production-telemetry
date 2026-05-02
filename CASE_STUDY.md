@@ -1,78 +1,83 @@
-# Case Study — LLM Production Telemetry (Decision-Grade Observability)
+# Case Study — LLM Production Telemetry
 
 ## Overview
-This project turns messy LLM telemetry into **operator decisions**:
-SLO/budget burn → hotspots → routing backtests → drift checks → capacity-aware triage → a versionable `DecisionArtifact`.
+
+This project turns noisy LLM telemetry into **operator-review artifacts**:
+
+**SLO/budget burn → hotspots → routing backtest → temporal drift checks → capacity-aware triage → `DecisionArtifact`.**
 
 It includes:
-- a decision-first notebook (`LLM_Production_Telemetry.ipynb`)
-- a strict telemetry validator (CLI)
-- a small, share-safe sample generator for smoke runs
 
-## The real problem
-LLM systems do not fail like classic ML models. They fail as **systems**:
-- latency spikes under load while quality looks unchanged
-- prompt/model changes improve one slice but regress another
-- cost grows quietly via longer outputs or retries
-- tool-calling errors appear only in specific scenarios
-- one provider outage forces a routing decision under pressure
+- a decision-grade notebook: `LLM_Production_Telemetry.ipynb`
+- a telemetry validator CLI
+- a synthetic sample-data generator
+- a headless notebook runner for smoke tests and CI
 
-If you only track aggregate quality, you learn about regressions after users do.
+## The problem
 
-## Goals (definition of done)
-**Functional goals**
-- Validate telemetry tables and joins (minimum contract).
-- Produce decision views: **SLO + budget burn**, **hotspots**, **risk slices**, **routing policy candidates**, and **drift deltas**.
+LLM systems fail as operational systems, not only as models:
 
-**Engineering goals**
-- Fail fast when telemetry is broken (missing columns, duplicated IDs, invalid joins).
-- Keep analysis reproducible and CPU-friendly.
-- Provide two entry points: **CLI validation** and **notebook execution**.
+- latency spikes under load while average quality looks stable
+- one provider or model becomes expensive for a specific use case
+- routing changes help one slice but regress another
+- retries and long completions quietly increase cost
+- tool errors or formatting failures cluster in narrow segments
 
-## Data contract (minimum viable telemetry)
-Telemetry is represented as three CSV tables (see `docs/schema.md`):
+A useful LLMOps workflow needs to identify these issues before a policy is rolled out.
 
-- `llm_system_interactions.csv` (required): per-interaction records (latency, tokens, costs, outcomes)
-- `llm_system_sessions_summary.csv` (required): session-level rollups
-- `llm_system_users_summary.csv` (required): user-level rollups
+## What this repo does
 
-The validator enforces required files, required columns, primary-key uniqueness, and join integrity.
+The notebook converts telemetry into reviewable evidence:
 
-## Approach
-### 1) Integrity first
-Run validation before analysis to catch:
-- missing files / columns
-- duplicated IDs
-- invalid joins across tables
+1. **Integrity gates** — validate primary keys, foreign keys, timestamps, and token accounting.
+2. **Health snapshot** — summarize failures, SLA breaches, latency, cost, and missingness.
+3. **Budget burn** — show reliability, latency, and cost pressure over time.
+4. **Hotspots and slices** — identify the use cases, tiers, models, and providers driving risk.
+5. **Routing backtest** — compare a candidate routing proposal against historical baseline traffic.
+6. **Temporal drift report** — compare early and recent windows using PSI and total-variation distance.
+7. **Triage threshold** — select a review threshold based on capacity, false-negative cost, and unit review cost.
+8. **DecisionArtifact** — export a strict JSON summary for review and traceability.
 
-This prevents building conclusions on corrupted telemetry.
+## Definition of done
 
-### 2) Decision views (not presentation-first charts)
-The notebook is structured around operator decisions:
-- **Health snapshot:** failure rates, SLA breaches, cost/latency distribution
-- **Budget burn:** cost over time and the drivers behind it
-- **Hotspots + slices:** where quality/cost/latency breaks (domain × scenario × model/provider)
-- **Routing backtests:** candidate policies and expected impact
-- **Drift checks:** what changed between windows
-- **Triage threshold:** capacity-aware decisioning from calibrated risk signals
+A successful run should:
 
-### 3) Outputs
-Runs produce reusable outputs under `./artifacts/` (tables and figures used to support release decisions).
-See `artifacts/README.md` for expected outputs.
+- pass integrity checks
+- generate all expected artifacts under `artifacts/`
+- make the routing recommendation explicit
+- compare triage policy against simple baselines
+- mark risky outcomes as `review_required` instead of treating them as automatic rollout instructions
 
-## Usage
-Setup and execution steps are documented in `README.md`.
+## Outputs
 
-Minimal flow:
-- Validate: `python scripts/validate_data.py --data-dir <csv_dir>`
-- Run the notebook (interactive or headless) and export outputs to `./artifacts/`
+Expected outputs are documented in [`docs/outputs.md`](docs/outputs.md).
+
+The most important final artifact is:
+
+```text
+decision_artifact.json
+```
+
+It records whether the current run is clean or requires review, and why.
+
+## Design choices
+
+- **Synthetic sample data** keeps the repo safe to share.
+- **Strict validation** prevents analysis on broken telemetry.
+- **Review-ready language** avoids overclaiming rollout readiness.
+- **Headless execution** makes the notebook easier to smoke-test in CI.
+- **Simple baselines** make triage policy conclusions easier to audit.
 
 ## Limitations
-- Telemetry schemas vary across stacks; this repo enforces a strict minimum contract.
-- Some attributions depend on what your logs include (tool errors, provider metadata, routing labels).
-- This repository provides an analysis workflow; production deployments should add access controls, redaction, and retention policies.
 
-## Next steps
-- Add a release gate policy: slice-quality thresholds + max cost/latency budgets.
-- Track weekly baselines and regressions (drift alerts).
-- Integrate into CI: block merges when validation fails or key metrics regress.
+- The sample telemetry is synthetic and should not be interpreted as real production billing, incident, or customer data.
+- Routing backtests are observational and may be biased by historical traffic assignment.
+- A candidate routing policy should be tested in shadow mode before rollout.
+- Production deployments should add privacy controls, access controls, retention policies, redaction, monitoring, and rollback governance.
+
+## Suggested next steps
+
+- Add weekly baseline comparison reports.
+- Add release gates for cost, latency, failure rate, and review queue load.
+- Add provider pricing configuration for more realistic cost simulation.
+- Export an HTML or PDF run report for stakeholders.

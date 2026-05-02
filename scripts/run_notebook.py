@@ -69,7 +69,10 @@ def main() -> None:
     ap.add_argument("--config", type=str, default="configs/default.yaml")
     ap.add_argument("--notebook", type=str, default="LLM_Production_Telemetry.ipynb")
     ap.add_argument(
-        "--executed", type=str, default="artifacts/LLM_Production_Telemetry.executed.ipynb"
+        "--executed",
+        type=str,
+        default=None,
+        help="Path for the executed notebook. Defaults to <out-dir>/LLM_Production_Telemetry.executed.ipynb.",
     )
     ap.add_argument("--timeout", type=int, default=900)
     args = ap.parse_args()
@@ -80,7 +83,11 @@ def main() -> None:
         out_dir=Path(args.out_dir),
         config=Path(args.config),
         notebook=Path(args.notebook),
-        executed=Path(args.executed),
+        executed=(
+            Path(args.executed)
+            if args.executed
+            else Path(args.out_dir) / "LLM_Production_Telemetry.executed.ipynb"
+        ),
         timeout=int(args.timeout),
     )
     runner.run(params)
